@@ -1,0 +1,46 @@
+name: Code Scan
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: code-scan-${{ github.ref }}
+  cancel-in-progress: true
+
+# Jobben leser bare kode. Uten dette arver den standard-tokenet, som kan være
+# vidt åpent avhengig av repo-innstillingene.
+permissions:
+  contents: read
+
+jobs:
+  dead-code:
+    name: Dead Code
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # fallow audit sammenligner mot merge-base, så den trenger full historikk.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # Uten `version` leser action-setup `packageManager` fra package.json, så
+      # templaten slipper å pinne en pnpm-versjon per repo.
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      # Nødvendig for at fallow skal kunne resolve imports til faktiske pakker.
+      - run: pnpm install --frozen-lockfile
+      # Kun funn som PR-en selv innfører feiler jobben; arvet gjeld rapporteres
+      # men blokkerer ikke. Se .fallowrc.json for hva som er unntatt.
+      # Basen går via env, ikke inline-interpolering, så et grennavn aldri kan
+      # tolkes som shell.
+      #
+      # --max-crap står her og ikke bare i .fallowrc.json fordi health.maxCrap
+      # ikke slår gjennom til audit i fallow 3.15.0 — bare flagget gjør det.
+      # Begrunnelsen for verdien ligger i .fallowrc.json.
+      - env:
+          BASE_REF: ${{ github.base_ref || 'main' }}
+        run: npx --yes fallow@3.15.0 audit --base "origin/$BASE_REF" --max-crap 500

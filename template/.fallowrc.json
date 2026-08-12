@@ -1,0 +1,35 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+
+  // Filer som kjøres direkte (CLI-skript, seeds, generatorer) og ikke importeres
+  // av noe. Uten dette rapporteres de som ubrukte filer, og pakkene de bruker som
+  // devDependencies brukt i produksjonskode. Tilpass per repo.
+  "entry": ["scripts/**/*.{ts,mts,mjs}"],
+
+  // Kode vi ikke eier: vendorert, generert eller nedlastet.
+  "ignorePatterns": [],
+
+  // Pakker som bare brukes fra `entry`-filene over, eller som lastes uten et
+  // import-uttrykk fallow ser (f.eks. tailwindcss via @import i CSS). Skriv én
+  // linje per pakke med hvorfor — ellers vokser lista uten at noen tør rydde.
+  "ignoreDependencies": [],
+
+  "health": {
+    // CRAP er slått av som port. Formelen er cyclomatic² × (1 − dekning)³ +
+    // cyclomatic, og vi mater ikke inn dekningsdata, så fallow gjetter den.
+    // Gjetter den null, gir standardterskelen på 30 utslag på alt med
+    // cyclomatic ≥ 5. Det er ikke et kvalitetsmål, det er en cyclomatic-teller
+    // med misvisende navn — og du kommer ikke forbi den ved å rydde: en
+    // funksjon med cyclomatic 17 delt i fire med cyclomatic 5 hver gir fire
+    // funn i stedet for ett.
+    //
+    // 500 ligger over 420, som er verdien cyclomatic 20 (maxCyclomatic) gir ved
+    // null dekning. Cyclomatic, cognitive og unit size er dermed alltid det som
+    // slår ut først, og de gjetter ikke.
+    //
+    // NB: denne nøkkelen slår ikke gjennom til `fallow audit` i 3.15.0 — CI
+    // sender --max-crap 500 på kommandolinja i tillegg. Skru på igjen den dagen
+    // CI produserer coverage-final.json.
+    "maxCrap": 500
+  }
+}
