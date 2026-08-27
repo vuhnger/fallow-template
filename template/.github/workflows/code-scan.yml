@@ -37,10 +37,6 @@ jobs:
       # men blokkerer ikke. Se .fallowrc.json for hva som er unntatt.
       # Basen går via env, ikke inline-interpolering, så et grennavn aldri kan
       # tolkes som shell.
-      #
-      # --max-crap står her og ikke bare i .fallowrc.json fordi health.maxCrap
-      # ikke slår gjennom til audit i fallow 3.15.0 — bare flagget gjør det.
-      # Begrunnelsen for verdien ligger i .fallowrc.json.
       - env:
           BASE_REF: ${{ github.base_ref || 'main' }}
-        run: npx --yes fallow@3.15.0 audit --base "origin/$BASE_REF" --max-crap 500
+        run: npx --yes fallow@3.15.0 audit --base "origin/$BASE_REF"
