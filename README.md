@@ -1,6 +1,6 @@
 # fallow-template
 
-GitHub Actions-oppsett for kodescanning med [fallow](https://github.com/fallow-rs/fallow) — død kode, ubrukte eksporter, ubrukte dependencies og health-metrikker. Kopiert ut av `sykefravaer.drdropin.no`, generalisert så det kan klones inn i nye repoer.
+GitHub Actions-oppsett for kodescanning med [fallow](https://github.com/fallow-rs/fallow) — død kode, ubrukte eksporter, ubrukte dependencies og health-metrikker. Ment å klones inn i nye repoer.
 
 Forutsetter Node + pnpm.
 
@@ -33,14 +33,7 @@ Detaljene:
 - Base-ref går via `env:`, ikke inline `${{ }}` i `run:`, så et grennavn aldri kan tolkes som shell.
 - `permissions: contents: read` — jobben leser bare kode.
 - fallow er pinnet til `3.15.0`. Bump bevisst; nye versjoner finner nye ting og kan gjøre grønne PR-er røde.
-
-## `--max-crap 500`
-
-CRAP-porten er i praksis slått av. Formelen er `cyclomatic² × (1 − dekning)³ + cyclomatic`, og uten coverage-data gjetter fallow dekningen. Gjetter den null, slår standardterskelen på 30 ut på alt med cyclomatic ≥ 5 — og du kommer ikke forbi den ved å rydde, siden én funksjon med cyclomatic 17 delt i fire gir fire funn i stedet for ett.
-
-500 ligger over 420, som er verdien cyclomatic 20 gir ved null dekning. Cyclomatic, cognitive og unit size er dermed alltid det som slår ut først, og de gjetter ikke.
-
-Flagget står på kommandolinja og ikke bare i `.fallowrc.json` fordi `health.maxCrap` ikke slår gjennom til `audit` i 3.15.0. Skru på ordentlig CRAP-måling den dagen CI produserer `coverage-final.json`.
+- Health-metrikkene, CRAP-score inkludert, kjører med fallows standardterskler. Ingen porter er overstyrt i templaten — juster i `.fallowrc.json` hvis et repo trenger det.
 
 ## Etter installasjon
 
